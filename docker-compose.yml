@@ -1,0 +1,22 @@
+services:
+  order-service-db:
+    image: docker.io/library/postgres:latest
+    container_name: order-service-db
+    hostname: order-service-db
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_DATABASE}
+    ports:
+      - "5433:5432"
+    networks:
+      - order-service
+    volumes:
+      - data:/var/lib/postgresql/data/
+    restart: always
+
+networks:
+  order-service:
+    driver: bridge
+volumes:
+  data:
