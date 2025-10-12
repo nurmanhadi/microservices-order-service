@@ -17,9 +17,13 @@ type dbConfig struct {
 	MaxPoolConns int
 	MaxLifetime  int
 }
+type apiConfig struct {
+	Product string
+}
 
 type envConfig struct {
-	DB dbConfig
+	DB  dbConfig
+	API apiConfig
 }
 
 var ENV envConfig
@@ -37,6 +41,10 @@ func NewEnv() {
 		MaxPoolConns: envAsInt(os.Getenv("DB_MAX_POOL_CONNS"), 10),
 		MaxLifetime:  envAsInt(os.Getenv("DB_CONN_MAX_LIFETIME"), 300),
 	}
+	envAPI := apiConfig{
+		Product: os.Getenv("API_PRODUCT"),
+	}
+	ENV.API = envAPI
 	ENV.DB = envDB
 }
 

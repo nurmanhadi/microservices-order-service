@@ -1,0 +1,60 @@
+basePath: /api
+definitions:
+  dto.ItemAddRequest:
+    properties:
+      product_id:
+        type: integer
+      quantity:
+        type: integer
+    required:
+    - product_id
+    - quantity
+    type: object
+  dto.OrderAddRequest:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/dto.ItemAddRequest'
+        type: array
+      payment_method:
+        enum:
+        - qris
+        - bcava
+        type: string
+      user_id:
+        maxLength: 36
+        type: string
+    required:
+    - items
+    - payment_method
+    - user_id
+    type: object
+info:
+  contact: {}
+  description: This is the Order Service for managing orders and items.
+  title: Order Service API
+  version: "1.0"
+paths:
+  /orders:
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with items
+      parameters:
+      - description: Order Request
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/dto.OrderAddRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      summary: Create a new order
+      tags:
+      - Orders
+swagger: "2.0"
