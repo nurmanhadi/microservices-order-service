@@ -16,4 +16,7 @@ func (r *RouteConfig) Setup() {
 
 	order := api.Group("/orders")
 	order.POST("/", r.OrderHandler.AddOrder)
+	order.GET("/", r.OrderHandler.GetAllOrder)
+	order.GET("/users/:id", r.OrderHandler.GetAllOrderByUserID)
+	order.GET("/:id", r.OrderHandler.GetOrderByID)
 }

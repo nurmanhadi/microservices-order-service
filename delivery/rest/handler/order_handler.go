@@ -10,6 +10,9 @@ import (
 
 type OrderHandler interface {
 	AddOrder(ctx *gin.Context)
+	GetAllOrder(ctx *gin.Context)
+	GetOrderByID(ctx *gin.Context)
+	GetAllOrderByUserID(ctx *gin.Context)
 }
 type orderHandler struct {
 	orderService service.OrderService
@@ -43,4 +46,62 @@ func (h *orderHandler) AddOrder(ctx *gin.Context) {
 		return
 	}
 	response.Success(ctx, 201, "OK")
+}
+
+// GetAllOrder godoc
+// @Summary Fetch all orders
+// @Description Fetch all orders
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Success 200
+// @Failure 404
+// @Router /orders [get]
+func (h *orderHandler) GetAllOrder(ctx *gin.Context) {
+	result, err := h.orderService.GetAllOrder()
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+	response.Success(ctx, 200, result)
+}
+
+// GetOrderByID godoc
+// @Summary Get order by id
+// @Description Get order by spesific order id and include items
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param id path string true "order id"
+// @Success 200
+// @Failure 404
+// @Router /orders/{id} [get]
+func (h *orderHandler) GetOrderByID(ctx *gin.Context) {
+	id := ctx.Param("id")
+	result, err := h.orderService.GetOrderByID(id)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+	response.Success(ctx, 200, result)
+}
+
+// GetAllOrderByUserID godoc
+// @Summary get all order by user id
+// @Description Get all order by spesific user id
+// @Tags Orders
+// @Accept json
+// @Produce json
+// @Param id path string true "user id"
+// @Success 200
+// @Failure 404
+// @Router /orders/users/{id} [get]
+func (h *orderHandler) GetAllOrderByUserID(ctx *gin.Context) {
+	userID := ctx.Param("id")
+	result, err := h.orderService.GetAllOrderByUserID(userID)
+	if err != nil {
+		ctx.Error(err)
+		return
+	}
+	response.Success(ctx, 200, result)
 }

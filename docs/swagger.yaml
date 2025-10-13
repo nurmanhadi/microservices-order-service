@@ -36,6 +36,20 @@ info:
   version: "1.0"
 paths:
   /orders:
+    get:
+      consumes:
+      - application/json
+      description: Fetch all orders
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      summary: Fetch all orders
+      tags:
+      - Orders
     post:
       consumes:
       - application/json
@@ -55,6 +69,48 @@ paths:
         "400":
           description: Bad Request
       summary: Create a new order
+      tags:
+      - Orders
+  /orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get order by spesific order id and include items
+      parameters:
+      - description: order id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      summary: Get order by id
+      tags:
+      - Orders
+  /orders/users/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get all order by spesific user id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+      summary: get all order by user id
       tags:
       - Orders
 swagger: "2.0"
