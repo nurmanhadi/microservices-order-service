@@ -32,11 +32,12 @@ func (r *orderRepository) Insert(order entity.Order) error {
 		tx.Rollback()
 		return err
 	}
-	query := "INSERT INTO items(id, order_id, product_id, quantity, price, subtotal) VALUES"
+	query := "INSERT INTO items(order_id, product_id, quantity, price, subtotal) VALUES"
 	for _, x := range order.Items {
-		query += fmt.Sprintf("(%d, '%s', %d, %d, %d, %d),", x.ID, x.OrderID, x.ProductID, x.Quantity, x.Price, x.Subtotal)
+		query += fmt.Sprintf("('%s', %d, %d, %d, %d),", x.OrderID, x.ProductID, x.Quantity, x.Price, x.Subtotal)
 	}
 	newQuery := strings.TrimSuffix(query, ",")
+	fmt.Println(newQuery)
 	_, err = tx.Exec(newQuery)
 	if err != nil {
 		tx.Rollback()

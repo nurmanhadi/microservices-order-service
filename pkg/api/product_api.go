@@ -11,7 +11,7 @@ import (
 )
 
 type ProductAPI interface {
-	GetProductByID(productID int64) (*dto.ProductResponse, error)
+	GetProductByID(productID int64) (*dto.ApiProductResponse, error)
 }
 type productAPI struct {
 	baseURL string
@@ -20,7 +20,7 @@ type productAPI struct {
 func NewProductAPI(baseURL string) ProductAPI {
 	return &productAPI{baseURL: baseURL}
 }
-func (a *productAPI) GetProductByID(productID int64) (*dto.ProductResponse, error) {
+func (a *productAPI) GetProductByID(productID int64) (*dto.ApiProductResponse, error) {
 	url := fmt.Sprintf("%s/api/products/%d", a.baseURL, productID)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -35,9 +35,9 @@ func (a *productAPI) GetProductByID(productID int64) (*dto.ProductResponse, erro
 	if err != nil {
 		return nil, err
 	}
-	product := new(dto.ProductResponse)
+	product := new(dto.ApiResponse[*dto.ApiProductResponse])
 	if err := json.Unmarshal(body, &product); err != nil {
 		return nil, err
 	}
-	return product, nil
+	return product.Data, nil
 }
