@@ -4,6 +4,7 @@ import (
 	"order-service/config"
 	"order-service/config/database"
 	docs "order-service/docs"
+	"order-service/pkg/env"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -14,16 +15,23 @@ import (
 // @description This is the Order Service for managing orders and items.
 // @BasePath /api
 func main() {
-	config.NewEnv()
+	env.NewEnv()
 	logger := config.NewLogger()
 	db := database.NewSql()
+	defer db.Close()
+
 	validation := config.NewValidator()
 	router := config.NewRouter()
+	conn, ch := config.NewBroker()
+	defer conn.Close()
+	defer ch.Close()
+
 	config.Setup(&config.DependenciesConfig{
 		DB:         db,
 		Logger:     logger,
 		Validation: validation,
 		Router:     router,
+		Ch:         ch,
 	})
 
 	docs.SwaggerInfo.BasePath = "/api"

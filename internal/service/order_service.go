@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"order-service/delivery/messaging/producer"
 	"order-service/internal/dto"
 	"order-service/internal/entity"
 	"order-service/internal/repository"
@@ -24,15 +25,15 @@ type orderService struct {
 	logger          *logrus.Logger
 	validation      *validator.Validate
 	orderRepository repository.OrderRepository
-	productAPI      api.ProductAPI
+	orderProducer   producer.OrderProducer
 }
 
-func NewOrderService(logger *logrus.Logger, validation *validator.Validate, orderRepository repository.OrderRepository, productAPI api.ProductAPI) OrderService {
+func NewOrderService(logger *logrus.Logger, validation *validator.Validate, orderRepository repository.OrderRepository, orderProducer producer.OrderProducer) OrderService {
 	return &orderService{
 		logger:          logger,
 		validation:      validation,
 		orderRepository: orderRepository,
-		productAPI:      productAPI,
+		orderProducer:   orderProducer,
 	}
 }
 func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
@@ -44,7 +45,7 @@ func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
 	var totalAmount int64
 	items := make([]entity.Item, 0, len(request.Items))
 	for _, x := range request.Items {
-		product, err := s.productAPI.GetProductByID(x.ProductID)
+		product, err := api.GetProductByID(x.ProductID)
 		if err != nil {
 			s.logger.WithError(err).Error("failed to api get product by id")
 			return err
@@ -70,6 +71,11 @@ func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
 		s.logger.WithError(err).Error("failed to insert order")
 		return err
 	}
+	go func(logger *logrus.Logger) {
+		if err := s.orderProducer.PublishToOrderCreated(*order); err != nil {
+			logger.WithError(err).Error("failed to publish order created")
+		}
+	}(s.logger)
 	return nil
 }
 func (s *orderService) GetAllOrder() ([]dto.OrderResponse, error) {

@@ -1,4 +1,4 @@
-package config
+package env
 
 import (
 	"os"
@@ -20,13 +20,26 @@ type dbConfig struct {
 type apiConfig struct {
 	Product string
 }
-
+type brokerConfig struct {
+	VirtualHost string
+	Host        string
+	Port        string
+	Username    string
+	Password    string
+	Exchange    struct {
+		ProductService string
+	}
+	RouteKey struct {
+		OrderCreated string
+	}
+}
 type envConfig struct {
-	DB  dbConfig
-	API apiConfig
+	DB     dbConfig
+	API    apiConfig
+	Broker brokerConfig
 }
 
-var ENV envConfig
+var CONF envConfig
 
 func NewEnv() {
 	godotenv.Load()
@@ -44,8 +57,23 @@ func NewEnv() {
 	envAPI := apiConfig{
 		Product: os.Getenv("API_PRODUCT"),
 	}
-	ENV.API = envAPI
-	ENV.DB = envDB
+	envBroker := brokerConfig{
+		VirtualHost: os.Getenv("BROCKER_VIRTUAL_HOSTS"),
+		Host:        os.Getenv("BROKER_HOST"),
+		Port:        os.Getenv("BROKER_PORT"),
+		Username:    os.Getenv("BROKER_USERNAME"),
+		Password:    os.Getenv("BROKER_PASSWORD"),
+		Exchange: struct{ ProductService string }{
+			ProductService: os.Getenv("BROKER_EXCHANGE_PRODUCT_SERVICE"),
+		},
+		RouteKey: struct{ OrderCreated string }{
+			OrderCreated: os.Getenv("BROCKER_ROUTE_ORDER_CREATED"),
+		},
+	}
+
+	CONF.API = envAPI
+	CONF.DB = envDB
+	CONF.Broker = envBroker
 }
 
 func envAsInt(value string, defaultValue int) int {

@@ -7,21 +7,12 @@ import (
 	"io"
 	"net/http"
 	"order-service/internal/dto"
+	"order-service/pkg/env"
 	"strconv"
 )
 
-type ProductAPI interface {
-	GetProductByID(productID int64) (*dto.ApiProductResponse, error)
-}
-type productAPI struct {
-	baseURL string
-}
-
-func NewProductAPI(baseURL string) ProductAPI {
-	return &productAPI{baseURL: baseURL}
-}
-func (a *productAPI) GetProductByID(productID int64) (*dto.ApiProductResponse, error) {
-	url := fmt.Sprintf("%s/api/products/%d", a.baseURL, productID)
+func GetProductByID(productID int64) (*dto.ApiProductResponse, error) {
+	url := fmt.Sprintf("%s/api/products/%d", env.CONF.API.Product, productID)
 	resp, err := http.Get(url)
 	if err != nil {
 		return nil, err

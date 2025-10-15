@@ -3,7 +3,7 @@ package database
 import (
 	"fmt"
 	"log"
-	"order-service/config"
+	"order-service/pkg/env"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -12,19 +12,19 @@ import (
 
 func NewSql() *sqlx.DB {
 	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		config.ENV.DB.Host,
-		config.ENV.DB.Port,
-		config.ENV.DB.Username,
-		config.ENV.DB.Password,
-		config.ENV.DB.Name,
+		env.CONF.DB.Host,
+		env.CONF.DB.Port,
+		env.CONF.DB.Username,
+		env.CONF.DB.Password,
+		env.CONF.DB.Name,
 	)
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		log.Fatalf("failed connect to database: %s", err)
 	}
-	db.SetMaxIdleConns(config.ENV.DB.MaxIdleConns)
-	db.SetMaxOpenConns(config.ENV.DB.MaxPoolConns)
-	db.SetConnMaxLifetime(time.Duration(config.ENV.DB.MaxLifetime) * time.Minute)
+	db.SetMaxIdleConns(env.CONF.DB.MaxIdleConns)
+	db.SetMaxOpenConns(env.CONF.DB.MaxPoolConns)
+	db.SetConnMaxLifetime(time.Duration(env.CONF.DB.MaxLifetime) * time.Minute)
 
 	if err := db.Ping(); err != nil {
 		log.Fatalf("failed ping to database: %s", err)

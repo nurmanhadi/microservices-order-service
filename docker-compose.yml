@@ -1,6 +1,6 @@
 services:
   order-service-db:
-    image: docker.io/library/postgres:latest
+    image: postgres:latest
     container_name: order-service-db
     hostname: order-service-db
     environment:
