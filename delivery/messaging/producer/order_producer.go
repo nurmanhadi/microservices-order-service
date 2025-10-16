@@ -32,7 +32,7 @@ func (p *orderProducer) PublishToOrderCreated(order entity.Order) error {
 	for i := 0; i < 3; i++ {
 		err = p.ch.PublishWithContext(
 			ctx,
-			env.CONF.Broker.Exchange.ProductService,
+			env.CONF.Broker.Exchange.Order,
 			env.CONF.Broker.RouteKey.OrderCreated,
 			false,
 			false,

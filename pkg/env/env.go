@@ -27,7 +27,7 @@ type brokerConfig struct {
 	Username    string
 	Password    string
 	Exchange    struct {
-		ProductService string
+		Order string
 	}
 	RouteKey struct {
 		OrderCreated string
@@ -63,8 +63,8 @@ func NewEnv() {
 		Port:        os.Getenv("BROKER_PORT"),
 		Username:    os.Getenv("BROKER_USERNAME"),
 		Password:    os.Getenv("BROKER_PASSWORD"),
-		Exchange: struct{ ProductService string }{
-			ProductService: os.Getenv("BROKER_EXCHANGE_PRODUCT_SERVICE"),
+		Exchange: struct{ Order string }{
+			Order: os.Getenv("BROKER_EXCHANGE_ORDER"),
 		},
 		RouteKey: struct{ OrderCreated string }{
 			OrderCreated: os.Getenv("BROCKER_ROUTE_ORDER_CREATED"),
