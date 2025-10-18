@@ -20,3 +20,8 @@ type OrderResponse struct {
 	UpdatedAt     time.Time      `json:"updated_at"`
 	Items         []ItemResponse `json:"items"`
 }
+type OrderEventResponse struct {
+	OrderID   string `json:"order_id"`
+	ProductID int64  `json:"product_id"`
+	Quantity  int    `json:"quantity"`
+}

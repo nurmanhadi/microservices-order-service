@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"order-service/internal/entity"
 	"strings"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -11,8 +12,9 @@ import (
 type OrderRepository interface {
 	Insert(order entity.Order) error
 	FindAll() ([]entity.Order, error)
-	FindByID(id string) (*entity.Order, error)
 	FindAllByUserID(userID string) ([]entity.Order, error)
+	FindByID(id string) (*entity.Order, error)
+	UpdateStatusByID(id string, status string) error
 }
 type orderRepository struct {
 	db *sqlx.DB
@@ -82,4 +84,16 @@ func (r *orderRepository) FindAllByUserID(userID string) ([]entity.Order, error)
 		return nil, err
 	}
 	return orders, nil
+}
+func (r *orderRepository) UpdateStatusByID(id string, status string) error {
+	stmt, err := r.db.Prepare("UPDATE orders SET status = $1, updated_at = $2 WHERE id = $3")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	_, err = stmt.Exec(status, time.Now(), id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

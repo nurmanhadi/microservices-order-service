@@ -33,11 +33,9 @@ func NewBroker() (*amqp.Connection, *amqp.Channel) {
 	if err != nil {
 		log.Fatalf("failed to connect broker: %s", err.Error())
 	}
-	// defer conn.Close()
 	ch, err := conn.Channel()
 	if err != nil {
 		log.Fatalf("failed to open channel broker: %s", err.Error())
 	}
-	// defer ch.Close()
 	return conn, ch
 }

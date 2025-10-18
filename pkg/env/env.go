@@ -19,6 +19,7 @@ type dbConfig struct {
 }
 type apiConfig struct {
 	Product string
+	Payment string
 }
 type brokerConfig struct {
 	VirtualHost string
@@ -30,7 +31,10 @@ type brokerConfig struct {
 		Order string
 	}
 	RouteKey struct {
-		OrderCreated string
+		OrderUpdated string
+	}
+	Queue struct {
+		Order string
 	}
 }
 type envConfig struct {
@@ -56,6 +60,7 @@ func NewEnv() {
 	}
 	envAPI := apiConfig{
 		Product: os.Getenv("API_PRODUCT"),
+		Payment: os.Getenv("API_PAYMENT"),
 	}
 	envBroker := brokerConfig{
 		VirtualHost: os.Getenv("BROCKER_VIRTUAL_HOSTS"),
@@ -66,8 +71,11 @@ func NewEnv() {
 		Exchange: struct{ Order string }{
 			Order: os.Getenv("BROKER_EXCHANGE_ORDER"),
 		},
-		RouteKey: struct{ OrderCreated string }{
-			OrderCreated: os.Getenv("BROCKER_ROUTE_ORDER_CREATED"),
+		RouteKey: struct{ OrderUpdated string }{
+			OrderUpdated: os.Getenv("BROCKER_ROUTE_ORDER_UPDATED"),
+		},
+		Queue: struct{ Order string }{
+			Order: os.Getenv("BROKER_QUEUE_ORDER"),
 		},
 	}
 

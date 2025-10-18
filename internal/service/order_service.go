@@ -2,6 +2,7 @@ package service
 
 import (
 	"database/sql"
+	"errors"
 	"order-service/delivery/messaging/producer"
 	"order-service/internal/dto"
 	"order-service/internal/entity"
@@ -16,10 +17,11 @@ import (
 )
 
 type OrderService interface {
-	AddOrder(request dto.OrderAddRequest) error
+	AddOrder(request dto.OrderAddRequest) (*dto.PaymentResponse, error)
 	GetAllOrder() ([]dto.OrderResponse, error)
 	GetOrderByID(id string) (*dto.OrderResponse, error)
 	GetAllOrderByUserID(userID string) ([]dto.OrderResponse, error)
+	UpdateStatusByID(request dto.PaymentEventResponse) error
 }
 type orderService struct {
 	logger          *logrus.Logger
@@ -36,10 +38,10 @@ func NewOrderService(logger *logrus.Logger, validation *validator.Validate, orde
 		orderProducer:   orderProducer,
 	}
 }
-func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
+func (s *orderService) AddOrder(request dto.OrderAddRequest) (*dto.PaymentResponse, error) {
 	if err := s.validation.Struct(&request); err != nil {
 		s.logger.WithError(err).Warn("failed to validate request add order")
-		return err
+		return nil, err
 	}
 	orderID := uuid.NewString()
 	var totalAmount int64
@@ -48,7 +50,7 @@ func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
 		product, err := api.GetProductByID(x.ProductID)
 		if err != nil {
 			s.logger.WithError(err).Error("failed to api get product by id")
-			return err
+			return nil, err
 		}
 		items = append(items, entity.Item{
 			OrderID:   orderID,
@@ -67,16 +69,22 @@ func (s *orderService) AddOrder(request dto.OrderAddRequest) error {
 		PaymentMethod: request.PaymentMethod,
 		Items:         items,
 	}
+	paymentRequest := &dto.PaymentAddRequest{
+		OrderID:       order.ID,
+		TotalAmount:   order.TotalAmount,
+		PaymentMethod: order.PaymentMethod,
+	}
+	response, err := api.PaymentCreateTransaction(*paymentRequest)
+	if err != nil {
+		s.logger.WithError(err).Error("failed to api payment create transaction")
+		return nil, err
+	}
 	if err := s.orderRepository.Insert(*order); err != nil {
 		s.logger.WithError(err).Error("failed to insert order")
-		return err
+		return nil, err
 	}
-	go func(logger *logrus.Logger) {
-		if err := s.orderProducer.PublishToOrderCreated(*order); err != nil {
-			logger.WithError(err).Error("failed to publish order created")
-		}
-	}(s.logger)
-	return nil
+
+	return response, nil
 }
 func (s *orderService) GetAllOrder() ([]dto.OrderResponse, error) {
 	orders, err := s.orderRepository.FindAll()
@@ -152,4 +160,40 @@ func (s *orderService) GetAllOrderByUserID(userID string) ([]dto.OrderResponse, 
 		})
 	}
 	return resp, nil
+}
+func (s *orderService) UpdateStatusByID(request dto.PaymentEventResponse) error {
+	if err := s.validation.Struct(&request); err != nil {
+		s.logger.WithError(err).Warn("failed to validate request update status by order id")
+		return err
+	}
+	order, err := s.orderRepository.FindByID(request.OrderID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			s.logger.WithError(err).Warn("order not found")
+			return errors.New("order not found")
+		}
+		s.logger.WithError(err).Error("failed get order by id")
+		return err
+	}
+	datas := make([]dto.OrderEventResponse, 0, len(order.Items))
+	for _, x := range order.Items {
+		datas = append(datas, dto.OrderEventResponse{
+			OrderID:   x.OrderID,
+			ProductID: x.ProductID,
+			Quantity:  x.Quantity,
+		})
+	}
+	err = s.orderRepository.UpdateStatusByID(order.ID, request.TransactionStatus)
+	if err != nil {
+		s.logger.WithError(err).Error("failed to update status by id")
+		return err
+	}
+	go func() {
+		err := s.orderProducer.PublishToOrderUpdated(datas)
+		if err != nil {
+			s.logger.WithError(err).Error("failed to publish to order updated")
+			return
+		}
+	}()
+	return nil
 }

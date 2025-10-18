@@ -1,6 +1,7 @@
 package config
 
 import (
+	"order-service/delivery/messaging/consumer"
 	"order-service/delivery/messaging/producer"
 	"order-service/delivery/rest/handler"
 	"order-service/delivery/rest/routes"
@@ -41,4 +42,8 @@ func Setup(deps *DependenciesConfig) {
 		OrderHandler: orderHand,
 	}
 	route.Setup()
+
+	// consumer
+	orderCons := consumer.NewOrderConsumer(deps.Logger, deps.Ch, orderServ)
+	orderCons.ReceivedFromPaymentUpdated()
 }

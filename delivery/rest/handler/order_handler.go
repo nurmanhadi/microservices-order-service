@@ -40,12 +40,12 @@ func (h *orderHandler) AddOrder(ctx *gin.Context) {
 		ctx.Error(response.Except(400, "failed to parse json"))
 		return
 	}
-	err := h.orderService.AddOrder(*request)
+	result, err := h.orderService.AddOrder(*request)
 	if err != nil {
 		ctx.Error(err)
 		return
 	}
-	response.Success(ctx, 201, "OK")
+	response.Success(ctx, 201, result)
 }
 
 // GetAllOrder godoc
